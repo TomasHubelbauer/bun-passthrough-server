@@ -1,6 +1,8 @@
 const textDecoder = new TextDecoder();
 
 const server = Bun.serve({
+  // @ts-expect-error Bun types?
+  idleTimeout: 255,
   async fetch(request) {
     const url = new URL(request.url);
     switch (url.pathname) {
@@ -16,7 +18,6 @@ const server = Bun.serve({
         });
       }
       case "/consume": {
-        // @ts-expect-error Bun types?
         for await (const chunk of request.body) {
           console.log("Consumed:", textDecoder.decode(chunk));
         }
@@ -32,7 +33,5 @@ const server = Bun.serve({
 const response = await fetch(`http://localhost:${server.port}/produce`);
 await fetch(`http://localhost:${server.port}/consume`, {
   method: "POST",
-
-  // Note this doesn't work even with `duplex` set to `half` or `full`
   body: response.body,
 });
